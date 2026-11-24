@@ -1,14 +1,14 @@
 {
   "name": "fate-catalyst",
   "productName": "Fate Catalyst",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A low-poly 3D trickster sandbox.",
   "author": "Fate Catalyst",
   "main": "main.js",
   "private": true,
   "scripts": {
     "build:web": "node build-offline.mjs",
-    "build:win": "node build-offline.mjs && electron-packager . \"Fate Catalyst\" --platform=win32 --arch=x64 --out=dist --overwrite --ignore=\"^/dist\" --ignore=\"^/node_modules\" --ignore=\"^/build-offline.mjs\" --ignore=\"^/src\" --app-version=0.2.0 --win32metadata.ProductName=\"Fate Catalyst\" --win32metadata.FileDescription=\"Fate Catalyst\""
+    "build:win": "node build-offline.mjs && electron-packager . \"Fate Catalyst\" --platform=win32 --arch=x64 --out=dist --overwrite --ignore=\"^/dist\" --ignore=\"^/node_modules\" --ignore=\"^/build-offline.mjs\" --ignore=\"^/src\" --app-version=0.3.0 --win32metadata.ProductName=\"Fate Catalyst\" --win32metadata.FileDescription=\"Fate Catalyst\""
   },
   "devDependencies": {
     "@electron/packager": "18.3.6",
