@@ -39,3 +39,15 @@ Then open http://localhost:8000.
 ## Tech
 
 One self-contained HTML file: [three.js](https://threejs.org) 0.160 for rendering and [cannon-es](https://github.com/pmndrs/cannon-es) 0.20 for physics and ragdolls, with sound synthesized by the Web Audio API. There's no build step.
+
+## Desktop build (Windows)
+
+`desktop/` wraps the game in [Electron](https://www.electronjs.org) as a standalone Windows app that runs offline, with three.js, cannon-es and the fonts bundled in.
+
+```bash
+cd desktop
+npm install
+npm run build:win
+```
+
+The app lands in `desktop/dist/Fate Catalyst-win32-x64/`. Zip that whole folder to share it, then run `Fate Catalyst.exe`. The build isn't code-signed, so Windows SmartScreen asks once: click **More info**, then **Run anyway**.
