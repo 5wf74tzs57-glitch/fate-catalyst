@@ -19,7 +19,7 @@ Then open http://localhost:8000.
 ## How a round works
 
 1. **Recon.** Time is frozen. Hover people to read their day. Two of them are at their breaking point, and anything they cause during a meltdown counts double. Press **P** or **▶ Run time** to watch traffic first.
-2. **Plant catalysts.** You have 100 Fate to spend on a plastic bag, thumbtack, skateboard, soccer ball, golf ball, car door, magic scissors, rabid squirrel, drunk guy or lightning, plus rain, fog and wind.
+2. **Plant catalysts.** You have 100 Fate to spend on a plastic bag, thumbtack, skateboard, soccer ball, golf ball, car door, magic scissors, rabid squirrel, drunk guy or lightning, plus rain, fog and wind. The magic scissors snip whatever you click: a traffic signal (every light goes haywire), a billboard's cables, a log truck's tie-downs, a delivery van's door, or a lane to catch the next truck or van.
 3. **Release.** You get 45 seconds of consequences, and leftover Fate can be spent mid-run.
 4. **Replay and claim.** The replay is titled after your most destructive catalyst. The claim itemizes injuries, vehicles, property and emotional distress, and every line shows the chain of cause and effect that led to it.
 
