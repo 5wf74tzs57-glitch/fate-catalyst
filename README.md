@@ -1,4 +1,4 @@
-# Fate / Catalyst
+# Catalyst
 
 A low-poly 3D trickster sandbox. You don't cause disasters, you start them: plant small catalysts at a busy city intersection, hit **Release**, and get 45 seconds of consequences, a slow-motion replay, and an itemized insurance claim.
 
@@ -38,7 +38,13 @@ Then open http://localhost:8000.
 
 ## Tech
 
-One self-contained HTML file: [three.js](https://threejs.org) 0.160 for rendering and [cannon-es](https://github.com/pmndrs/cannon-es) 0.20 for physics and ragdolls, with sound synthesized by the Web Audio API. There's no build step.
+One HTML file plus the models in `assets/`: [three.js](https://threejs.org) 0.160 for rendering and [cannon-es](https://github.com/pmndrs/cannon-es) 0.20 for physics and ragdolls, with sound synthesized by the Web Audio API. There's no build step for the web version.
+
+## Editing the models in Blender
+
+Every car, person, prop and catalyst is a `.glb` file in `assets/`. The **Catalyst Asset Kit** add-on (`tools/blender/catalyst_kit.py`) opens them in Blender with labeled hitboxes, joints and attachment points, a scale reference and marker-color painting, then checks your edit and exports it straight back into the game. See **[docs/BLENDER.md](docs/BLENDER.md)**.
+
+If a model file is missing or broken, the game falls back to its built-in version, so it always runs.
 
 ## Desktop build (Windows)
 
@@ -50,4 +56,4 @@ npm install
 npm run build:win
 ```
 
-The app lands in `desktop/dist/Fate Catalyst-win32-x64/`. Zip that whole folder to share it, then run `Fate Catalyst.exe`. The build isn't code-signed, so Windows SmartScreen asks once: click **More info**, then **Run anyway**.
+The app lands in `desktop/dist/Catalyst-win32-x64/`. Zip that whole folder to share it, then run `Catalyst.exe`. The build isn't code-signed, so Windows SmartScreen asks once: click **More info**, then **Run anyway**.

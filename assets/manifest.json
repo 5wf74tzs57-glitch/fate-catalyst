@@ -1,0 +1,137 @@
+{
+  "version": 1795586447543,
+  "assets": [
+    {
+      "id": "sedan",
+      "file": "sedan.glb",
+      "type": "car",
+      "label": "Sedan"
+    },
+    {
+      "id": "taxi",
+      "file": "taxi.glb",
+      "type": "car",
+      "label": "Taxi"
+    },
+    {
+      "id": "suv",
+      "file": "suv.glb",
+      "type": "car",
+      "label": "SUV"
+    },
+    {
+      "id": "van",
+      "file": "van.glb",
+      "type": "car",
+      "label": "Delivery van"
+    },
+    {
+      "id": "logtruck",
+      "file": "logtruck.glb",
+      "type": "car",
+      "label": "Log truck"
+    },
+    {
+      "id": "person",
+      "file": "person.glb",
+      "type": "person",
+      "label": "Pedestrian"
+    },
+    {
+      "id": "gary",
+      "file": "gary.glb",
+      "type": "person",
+      "label": "Gary"
+    },
+    {
+      "id": "lamp",
+      "file": "lamp.glb",
+      "type": "prop",
+      "label": "Lamp post"
+    },
+    {
+      "id": "hydrant",
+      "file": "hydrant.glb",
+      "type": "prop",
+      "label": "Fire hydrant"
+    },
+    {
+      "id": "trash",
+      "file": "trash.glb",
+      "type": "prop",
+      "label": "Trash can"
+    },
+    {
+      "id": "news",
+      "file": "news.glb",
+      "type": "prop",
+      "label": "Newspaper box"
+    },
+    {
+      "id": "cart",
+      "file": "cart.glb",
+      "type": "prop",
+      "label": "Hot dog cart (Sal's)"
+    },
+    {
+      "id": "skateboard",
+      "file": "skateboard.glb",
+      "type": "item",
+      "label": "Skateboard"
+    },
+    {
+      "id": "soccer_ball",
+      "file": "soccer_ball.glb",
+      "type": "item",
+      "label": "Soccer ball"
+    },
+    {
+      "id": "golf_ball",
+      "file": "golf_ball.glb",
+      "type": "item",
+      "label": "Golf ball"
+    },
+    {
+      "id": "plastic_bag",
+      "file": "plastic_bag.glb",
+      "type": "item",
+      "label": "Plastic bag"
+    },
+    {
+      "id": "thumbtack",
+      "file": "thumbtack.glb",
+      "type": "item",
+      "label": "Thumbtack"
+    },
+    {
+      "id": "scissors",
+      "file": "scissors.glb",
+      "type": "item",
+      "label": "Magic scissors"
+    },
+    {
+      "id": "squirrel",
+      "file": "squirrel.glb",
+      "type": "item",
+      "label": "Rabid squirrel"
+    },
+    {
+      "id": "bottle",
+      "file": "bottle.glb",
+      "type": "item",
+      "label": "Gary's bottle"
+    },
+    {
+      "id": "storm_cloud",
+      "file": "storm_cloud.glb",
+      "type": "item",
+      "label": "Lightning cloud"
+    },
+    {
+      "id": "log",
+      "file": "log.glb",
+      "type": "item",
+      "label": "Log"
+    }
+  ]
+}

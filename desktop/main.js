@@ -7,7 +7,7 @@ function createWindow() {
     height: 900,
     minWidth: 960,
     minHeight: 600,
-    title: 'Fate / Catalyst',
+    title: 'Catalyst',
     backgroundColor: '#14121b',
     autoHideMenuBar: true,
     show: false,

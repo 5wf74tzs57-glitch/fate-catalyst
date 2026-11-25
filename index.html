@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="A low-poly 3D trickster sandbox: plant small catalysts at a busy intersection, release, and read the insurance claim.">
-<title>Fate / Catalyst</title>
+<title>Catalyst</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=IBM+Plex+Mono:wght@500;700&family=Inter:wght@400;600;800&display=swap">
 <style>
@@ -151,7 +151,7 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 
 <div id="hud">
   <div>
-    <div class="brand">FATE<i>/</i>CATALYST</div>
+    <div class="brand">CATALYST</div>
     <div class="chip" id="phase">Recon</div>
   </div>
   <div id="timerBox"><div id="timer">0:45</div><div id="timerLab">Run length</div></div>
@@ -181,7 +181,7 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 
 <div id="intro" class="scrim">
   <div class="box panel">
-    <h1>FATE<i>/</i>CATALYST</h1>
+    <h1>CATALYST</h1>
     <p class="lede">You don't cause disasters. You start them. One busy intersection, one afternoon, and a pocket full of small, terrible ideas.</p>
     <ol>
       <li><span>1</span><div><b>Recon.</b> Watch the traffic lights. Hover people to read their day. Two of them are at their breaking point, and anything that happens to them doubles the damage they cause.</div></li>
@@ -207,6 +207,7 @@ import * as CANNON from 'cannon-es';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 /* ================= helpers ================= */
 const $ = s => document.querySelector(s);
@@ -801,6 +802,12 @@ const CNAME = { '#c1121f': 'red', '#1d4e89': 'blue', '#ededed': 'white', '#2a2a2
 const geoCache = new Map();
 function wheels(g, r, x, zs) { for (const sx of [-1, 1]) for (const z of zs) { g.push(CY(r, r, 0.3, 10, '#1b1d22', sx * x, r, z, 0, 0, Math.PI / 2)); g.push(CY(r * 0.5, r * 0.5, 0.32, 8, '#b8bcc4', sx * x, r, z, 0, 0, Math.PI / 2)); } }
 function carGeo(type, color) {
+  const A = ASSETS.cars[type];
+  if (!A) return proceduralCarGeo(type, color);
+  const key = 'asset:' + type + color; if (geoCache.has(key)) return geoCache.get(key);
+  const g = recolorGeo(A.geo, [[MARK.paint, color]]); geoCache.set(key, g); return g;
+}
+function proceduralCarGeo(type, color) {
   const key = type + color; if (geoCache.has(key)) return geoCache.get(key);
   const g = [], gl = '#22324a', T = CAR_TYPES[type];
   if (type === 'sedan' || type === 'taxi') {
@@ -846,8 +853,8 @@ function hazardGeo(T) {
   const g = []; for (const sx of [-1, 1]) for (const sz of [-1, 1]) g.push(B(0.22, 0.12, 0.08, '#fff', sx * (T.hw - 0.2), 0.3, sz * (T.hl + 0.03)));
   const geo = merge(g); geoCache.set(k, geo); return geo;
 }
-const LOG_GEO = merge([CY(0.34, 0.34, 6.2, 9, '#7a4e2a', 0, 0, 0), CY(0.3, 0.3, 0.03, 9, '#e2b07a', 0, 3.1, 0), CY(0.3, 0.3, 0.03, 9, '#e2b07a', 0, -3.1, 0)]);
-const STRAP_GEO = merge([B(1.7, 0.05, 0.14, '#ffb703', 0, 2.47, -2.6), B(1.7, 0.05, 0.14, '#ffb703', 0, 2.47, 0.6),
+let LOG_GEO = merge([CY(0.34, 0.34, 6.2, 9, '#7a4e2a', 0, 0, 0), CY(0.3, 0.3, 0.03, 9, '#e2b07a', 0, 3.1, 0), CY(0.3, 0.3, 0.03, 9, '#e2b07a', 0, -3.1, 0)]);
+let STRAP_GEO = merge([B(1.7, 0.05, 0.14, '#ffb703', 0, 2.47, -2.6), B(1.7, 0.05, 0.14, '#ffb703', 0, 2.47, 0.6),
   B(0.05, 1.3, 0.14, '#ffb703', 1.22, 1.85, -2.6), B(0.05, 1.3, 0.14, '#ffb703', -1.22, 1.85, -2.6), B(0.05, 1.3, 0.14, '#ffb703', 1.22, 1.85, 0.6), B(0.05, 1.3, 0.14, '#ffb703', -1.22, 1.85, 0.6)]);
 STRAP_GEO.translate(0, -0.6, 0);
 
@@ -863,7 +870,7 @@ function makeCar(type, lane, s, opts = {}) {
   const cab = CABINS[type];
   if (cab) body.addShape(new CANNON.Box(new CANNON.Vec3(cab[0], cab[1], cab[2])), new CANNON.Vec3(0, cab[3], cab[4]));
   const off = opts.offset ?? lane.off;
-  body.position.set(D.d.x * s + D.r.x * off, T.hh + 0.01, D.d.z * s + D.r.z * off);
+  body.position.set(D.d.x * s + D.r.x * off, (T.cy ?? T.hh) + 0.01, D.d.z * s + D.r.z * off);
   body.quaternion.setFromEuler(0, D.yaw, 0);
   body.allowSleep = false;
   const c = {
@@ -880,16 +887,22 @@ function makeCar(type, lane, s, opts = {}) {
   mesh.position.copy(body.position); mesh.quaternion.copy(body.quaternion);
   if (type === 'logtruck') {
     c.logs = [];
-    for (const [x, y] of [[-0.7, 1.53], [0, 1.53], [0.7, 1.53], [-0.35, 2.11], [0.35, 2.11]]) {
-      const lm = vcMesh(LOG_GEO); lm.rotation.x = Math.PI / 2; lm.position.set(x, y - T.hh, -1.0);
+    const A = ASSETS.cars.logtruck;
+    const slots = A && A.slots.length ? A.slots : [[-0.7, 1.53], [0, 1.53], [0.7, 1.53], [-0.35, 2.11], [0.35, 2.11]].map(([x, y]) => [x, y - T.hh, -1.0]);
+    for (const [x, y, z] of slots) {
+      const lm = vcMesh(LOG_GEO); lm.rotation.x = Math.PI / 2; lm.position.set(x, y, z);
       mesh.add(lm); track(lm); c.logs.push(lm);
     }
-    c.straps = new THREE.Mesh(STRAP_GEO, VC); mesh.add(c.straps); track(c.straps);
+    c.straps = new THREE.Mesh(A && A.straps ? A.straps : STRAP_GEO, VC); mesh.add(c.straps); track(c.straps);
   }
   if (opts.parked && type !== 'van') {
-    const pivot = new THREE.Group(); pivot.position.set(T.hw + 0.02, 0.85 - T.hh, 0.6); mesh.add(pivot);
-    const dm = vcMesh(B(0.08, 0.92, 1.1, color, 0, 0, 0), VCcar); dm.position.set(0, 0, -0.55); pivot.add(dm); track(dm);
-    c.door = { pivot, mesh: dm, angle: 0 };
+    const AD = ASSETS.cars[type] && ASSETS.cars[type].door;
+    const pivot = new THREE.Group(); mesh.add(pivot);
+    let dm;
+    if (AD) { pivot.position.copy(AD.pivot); dm = vcMesh(recolorGeo(AD.geo, [[MARK.paint, color]]), VCcar); dm.position.copy(AD.center); }
+    else { pivot.position.set(T.hw + 0.02, 0.85 - T.hh, 0.6); dm = vcMesh(B(0.08, 0.92, 1.1, color, 0, 0, 0), VCcar); dm.position.set(0, 0, -0.55); }
+    pivot.add(dm); track(dm);
+    c.door = { pivot, mesh: dm, angle: 0, half: AD ? AD.half : null };
   }
   cars.push(c);
   return c;
@@ -1152,7 +1165,7 @@ function spawnTraffic(dt) {
 let logTruckTimer = 6;
 
 /* ================= props ================= */
-function makeProp(kind, x, z, rotY = 0) {
+function propDef(kind) {
   let geo, half, mass, name, value, yC;
   if (kind === 'lamp') {
     geo = merge([CY(0.09, 0.12, 5.4, 8, '#3b3f47', 0, 2.7, 0), CY(0.2, 0.25, 0.45, 8, '#2c2f36', 0, 0.22, 0), B(0.08, 0.08, 1.6, '#3b3f47', 0, 5.32, 0.72), B(0.36, 0.18, 0.62, '#2c2f36', 0, 5.25, 1.42), B(0.28, 0.05, 0.5, '#fff1b8', 0, 5.14, 1.42)]);
@@ -1171,7 +1184,13 @@ function makeProp(kind, x, z, rotY = 0) {
       CY(0.3, 0.3, 0.1, 10, '#222', 0.8, 0.3, 0.52, Math.PI / 2, 0, 0), CY(0.3, 0.3, 0.1, 10, '#222', 0.8, 0.3, -0.52, Math.PI / 2, 0, 0), B(0.9, 0.3, 0.05, '#ffd166', 0, 0.85, 0.51)]);
     half = [1.1, 0.75, 0.52]; yC = 0.75; mass = 150; name = "Hot dog cart (Sal's)"; value = 6800;
   }
-  geo = geo.clone(); geo.translate(0, -yC, 0);
+  return { geo, half, mass, name, value, yC };
+}
+function makeProp(kind, x, z, rotY = 0) {
+  let { geo, half, mass, name, value, yC } = propDef(kind);
+  const AP = ASSETS.props[kind];
+  if (AP) { geo = AP.geo; half = AP.half; yC = AP.yC; }
+  else { geo = geo.clone(); geo.translate(0, -yC, 0); }
   const mesh = vcMesh(geo); dyn.add(mesh); track(mesh);
   const body = new CANNON.Body({ mass, shape: new CANNON.Box(new CANNON.Vec3(...half)), linearDamping: 0.1, angularDamping: 0.2, allowSleep: true, sleepSpeedLimit: 0.3 });
   body.position.set(x, yC + 0.16, z); body.quaternion.setFromEuler(0, rotY, 0);
@@ -1215,13 +1234,16 @@ const PART = {
   legL: { pivot: [0.12, 0.85, 0], jfc: [0, 0.4, 0], half: [0.09, 0.41, 0.1], mass: 9 },
   legR: { pivot: [-0.12, 0.85, 0], jfc: [0, 0.4, 0], half: [0.09, 0.41, 0.1], mass: 9 }
 };
-const LINKS = { head: [0, 0.32, 0], armL: [0.33, 0.26, 0], armR: [-0.33, 0.26, 0], legL: [0.12, -0.32, 0], legR: [-0.12, -0.32, 0] };
-const CORNERS = [[1, -1], [-1, -1], [-1, 1], [1, 1]];
-let pedMeshes = [];
-
-function makePed(opts = {}) {
-  const shirt = opts.shirt || pick(SHIRTS), pants = opts.pants || pick(PANTS), skin = opts.skin || pick(SKIN), hair = pick(HAIR), shoe = pick(['#111', '#f2f2f2', '#7a4a2a', '#c1121f']);
-  const geos = opts.shirtless ? {
+const LINKS = {};
+// where each limb attaches, in torso-hitbox space; recomputed if a Blender asset moves the joints
+function computeLinks() {
+  const t = PART.torso, c = [0, 1, 2].map(i => t.pivot[i] - t.jfc[i]);
+  for (const k of ['head', 'armL', 'armR', 'legL', 'legR']) LINKS[k] = PART[k].pivot.map((v, i) => v - c[i]);
+}
+computeLinks();
+function pedGeos(shirtless, c) {
+  const { shirt, pants, skin, hair, shoe } = c;
+  const geos = shirtless ? {
     torso: merge([B(0.5, 0.64, 0.3, skin, 0, 0, 0), IC(0.21, 1, skin, 0, -0.1, 0.09, 1.1, 0.95, 0.8), B(0.04, 0.04, 0.02, '#b5654a', 0.11, 0.14, 0.155), B(0.04, 0.04, 0.02, '#b5654a', -0.11, 0.14, 0.155),
       B(0.03, 0.03, 0.02, '#5a3b2a', 0.02, 0.06, 0.16), B(0.03, 0.03, 0.02, '#5a3b2a', -0.03, 0.02, 0.16), B(0.03, 0.03, 0.02, '#5a3b2a', 0.0, 0.1, 0.16), B(0.52, 0.1, 0.32, pants, 0, -0.29, 0)]),
     head: merge([IC(0.24, 1, skin, 0, 0.24, 0), IC(0.25, 1, hair, 0, 0.33, -0.03, 1, 0.62, 1), B(0.05, 0.07, 0.04, '#111', 0.085, 0.27, 0.215), B(0.05, 0.07, 0.04, '#111', -0.085, 0.27, 0.215), B(0.07, 0.08, 0.06, '#e8846f', 0, 0.2, 0.24), B(0.3, 0.04, 0.02, '#ff2d7a', 0, 0.42, 0.21)]),
@@ -1234,6 +1256,18 @@ function makePed(opts = {}) {
     legL: merge([B(0.18, 0.78, 0.2, pants, 0, -0.39, 0), B(0.2, 0.11, 0.3, shoe, 0, -0.8, 0.05)])
   };
   geos.armR = geos.armL; geos.legR = geos.legL;
+  return geos;
+}
+const CORNERS = [[1, -1], [-1, -1], [-1, 1], [1, 1]];
+let pedMeshes = [];
+
+function makePed(opts = {}) {
+  const shirt = opts.shirt || pick(SHIRTS), pants = opts.pants || pick(PANTS), skin = opts.skin || pick(SKIN), hair = pick(HAIR), shoe = pick(['#111', '#f2f2f2', '#7a4a2a', '#c1121f']);
+  const colors = { shirt, pants, skin, hair, shoe };
+  const AA = opts.shirtless ? ASSETS.gary : ASSETS.person;
+  let geos;
+  if (AA) { geos = {}; for (const k in PART) geos[k] = opts.shirtless ? AA.parts[k].geo : recolorGeo(AA.parts[k].geo, pedMarkers(colors)); }
+  else geos = pedGeos(!!opts.shirtless, colors);
   const root = new THREE.Group(); dyn.add(root);
   const parts = {};
   for (const k in PART) {
@@ -1425,7 +1459,7 @@ function separatePeds() {
 }
 
 /* Gary */
-const BOTTLE_GEO = merge([CY(0.06, 0.06, 0.24, 6, '#2d6a4f', 0, 0, 0), CY(0.025, 0.035, 0.1, 6, '#2d6a4f', 0, 0.17, 0)]);
+let BOTTLE_GEO = merge([CY(0.06, 0.06, 0.24, 6, '#2d6a4f', 0, 0, 0), CY(0.025, 0.035, 0.1, 6, '#2d6a4f', 0, 0.17, 0)]);
 function nearestPed(p, maxD, exclude) {
   let best = null, bd = maxD;
   for (const o of peds) {
@@ -1631,16 +1665,16 @@ const ringGeo = new THREE.RingGeometry(0.75, 0.95, 32);
 const ringMat = new THREE.MeshBasicMaterial({ color: '#ffc83d', transparent: true, opacity: 0.85, side: THREE.DoubleSide, depthWrite: false });
 function makeRing(pos, scale = 1) { const r = new THREE.Mesh(ringGeo, ringMat); r.rotation.x = -Math.PI / 2; r.position.set(pos.x, pos.y + 0.03, pos.z); r.scale.setScalar(scale); scene.add(r); return r; }
 
-const SKATE_GEO = merge([B(0.24, 0.04, 0.82, '#ff5d8f', 0, 0.13, 0), B(0.22, 0.01, 0.78, '#222', 0, 0.155, 0), ...[-0.28, 0.28].flatMap(z => [B(0.2, 0.03, 0.05, '#bbb', 0, 0.09, z), CY(0.035, 0.035, 0.05, 8, '#ffe066', 0.1, 0.045, z, 0, 0, Math.PI / 2), CY(0.035, 0.035, 0.05, 8, '#ffe066', -0.1, 0.045, z, 0, 0, Math.PI / 2)])]);
+let SKATE_GEO = merge([B(0.24, 0.04, 0.82, '#ff5d8f', 0, 0.13, 0), B(0.22, 0.01, 0.78, '#222', 0, 0.155, 0), ...[-0.28, 0.28].flatMap(z => [B(0.2, 0.03, 0.05, '#bbb', 0, 0.09, z), CY(0.035, 0.035, 0.05, 8, '#ffe066', 0.1, 0.045, z, 0, 0, Math.PI / 2), CY(0.035, 0.035, 0.05, 8, '#ffe066', -0.1, 0.045, z, 0, 0, Math.PI / 2)])]);
 SKATE_GEO.translate(0, -0.085, 0);
-const BALL_GEO = (() => { const g = new THREE.IcosahedronGeometry(0.11, 1); const n = g.attributes.position.count, a = new Float32Array(n * 3); for (let f = 0; f < n / 3; f++) { const black = (f % 5 === 0); for (let k = 0; k < 3; k++) { const i = (f * 3 + k) * 3; a[i] = a[i + 1] = a[i + 2] = black ? 0.03 : 0.95; } } g.setAttribute('color', new THREE.BufferAttribute(a, 3)); return g; })();
-const GOLF_GEO = IC(0.06, 1, '#ffffff', 0, 0, 0);
-const BAG_GEO = merge([IC(0.28, 0, '#f4f4f0', 0, 0, 0, 1.1, 0.8, 0.7), B(0.08, 0.16, 0.02, '#f4f4f0', 0.12, 0.26, 0), B(0.08, 0.16, 0.02, '#f4f4f0', -0.12, 0.26, 0)]);
+let BALL_GEO = (() => { const g = new THREE.IcosahedronGeometry(0.11, 1); const n = g.attributes.position.count, a = new Float32Array(n * 3); for (let f = 0; f < n / 3; f++) { const black = (f % 5 === 0); for (let k = 0; k < 3; k++) { const i = (f * 3 + k) * 3; a[i] = a[i + 1] = a[i + 2] = black ? 0.03 : 0.95; } } g.setAttribute('color', new THREE.BufferAttribute(a, 3)); return g; })();
+let GOLF_GEO = IC(0.06, 1, '#ffffff', 0, 0, 0);
+let BAG_GEO = merge([IC(0.28, 0, '#f4f4f0', 0, 0, 0, 1.1, 0.8, 0.7), B(0.08, 0.16, 0.02, '#f4f4f0', 0.12, 0.26, 0), B(0.08, 0.16, 0.02, '#f4f4f0', -0.12, 0.26, 0)]);
 const bagMat = new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, transparent: true, opacity: 0.85, roughness: 0.4, side: THREE.DoubleSide });
-const TACK_GEO = merge([CY(0.16, 0.16, 0.05, 10, '#e63946', 0, 0.08, 0), CY(0.02, 0.005, 0.12, 4, '#ccc', 0, 0.02, 0)]);
-const SCISSOR_GEO = merge([B(0.08, 0.03, 0.9, '#d9d9e3', 0.1, 0.06, 0.2, 0, 0.25, 0), B(0.08, 0.03, 0.9, '#d9d9e3', -0.1, 0.07, 0.2, 0, -0.25, 0), CY(0.18, 0.18, 0.04, 10, '#b5179e', 0.22, 0.06, -0.35), CY(0.18, 0.18, 0.04, 10, '#b5179e', -0.22, 0.06, -0.35)]);
-const SQ_GEO = merge([IC(0.17, 0, '#8b5a2b', 0, 0.2, 0, 0.9, 0.8, 1.4), IC(0.11, 0, '#8b5a2b', 0, 0.3, 0.22), IC(0.04, 0, '#111', 0.05, 0.34, 0.31), IC(0.04, 0, '#111', -0.05, 0.34, 0.31), IC(0.2, 0, '#a0693a', 0, 0.42, -0.28, 0.8, 1.6, 0.8), B(0.04, 0.08, 0.02, '#8b5a2b', 0.06, 0.42, 0.2), B(0.04, 0.08, 0.02, '#8b5a2b', -0.06, 0.42, 0.2)]);
-const CLOUD_GEO = merge([IC(1.6, 0, '#5c6370', 0, 0, 0), IC(1.2, 0, '#4d535e', 1.4, -0.2, 0.3), IC(1.1, 0, '#666d79', -1.3, -0.1, -0.2)]);
+let TACK_GEO = merge([CY(0.16, 0.16, 0.05, 10, '#e63946', 0, 0.08, 0), CY(0.02, 0.005, 0.12, 4, '#ccc', 0, 0.02, 0)]);
+let SCISSOR_GEO = merge([B(0.08, 0.03, 0.9, '#d9d9e3', 0.1, 0.06, 0.2, 0, 0.25, 0), B(0.08, 0.03, 0.9, '#d9d9e3', -0.1, 0.07, 0.2, 0, -0.25, 0), CY(0.18, 0.18, 0.04, 10, '#b5179e', 0.22, 0.06, -0.35), CY(0.18, 0.18, 0.04, 10, '#b5179e', -0.22, 0.06, -0.35)]);
+let SQ_GEO = merge([IC(0.17, 0, '#8b5a2b', 0, 0.2, 0, 0.9, 0.8, 1.4), IC(0.11, 0, '#8b5a2b', 0, 0.3, 0.22), IC(0.04, 0, '#111', 0.05, 0.34, 0.31), IC(0.04, 0, '#111', -0.05, 0.34, 0.31), IC(0.2, 0, '#a0693a', 0, 0.42, -0.28, 0.8, 1.6, 0.8), B(0.04, 0.08, 0.02, '#8b5a2b', 0.06, 0.42, 0.2), B(0.04, 0.08, 0.02, '#8b5a2b', -0.06, 0.42, 0.2)]);
+let CLOUD_GEO = merge([IC(1.6, 0, '#5c6370', 0, 0, 0), IC(1.2, 0, '#4d535e', 1.4, -0.2, 0.3), IC(1.1, 0, '#666d79', -1.3, -0.1, -0.2)]);
 
 function placeCatalyst(tool, pos, dir, target) {
   if (fate < tool.cost) return null;
@@ -2046,7 +2080,7 @@ function updateCatalysts(dt) {
           if (dd > 0 && dd < 6.2) {
             k.opening = 0; k.waiting = false;
             if (k.ring) { scene.remove(k.ring); k.ring = null; }
-            const b = new CANNON.Body({ type: CANNON.Body.KINEMATIC, mass: 0, shape: new CANNON.Box(new CANNON.Vec3(0.05, 0.46, 0.55)) });
+            const b = new CANNON.Body({ type: CANNON.Body.KINEMATIC, mass: 0, shape: new CANNON.Box(new CANNON.Vec3(...(pc.door.half || [0.05, 0.46, 0.55]))) });
             pc.door.mesh.getWorldPosition(_v); b.position.set(_v.x, _v.y, _v.z);
             k.dObj = { kind: 'door', id: k.id + 'd', cat: k, body: b, cause: k.cause, name: 'Car door', short: 'Car door' };
             b.ent = k.dObj; world.addBody(b); k.dBody = b;
@@ -2601,7 +2635,7 @@ function startReel() {
   applyFrame(R.t);
   R.look.copy(R.segs[0].pos);
   $('#reel').hidden = false;
-  $('#reelTitle').innerHTML = `<small>A FATE / CATALYST PRODUCTION</small>${esc(R.title)}`;
+  $('#reelTitle').innerHTML = `<small>A CATALYST PRODUCTION</small>${esc(R.title)}`;
   $('#reelCap').innerHTML = '';
   $('#tray').style.visibility = 'hidden'; $('#feed').style.visibility = 'hidden'; $('#mute').style.visibility = 'hidden';
   refreshUI();
@@ -2716,7 +2750,7 @@ function showReport() {
   $('#claim').innerHTML = html;
   $('#report').hidden = false;
   $('#again').onclick = () => { $('#report').hidden = true; newRound(); };
-  const rw = $('#rewatch'); if (rw) rw.onclick = () => { $('#report').hidden = true; phase = 'reel'; R.si = 0; R.mode = 'title'; R.timer = 2.4; R.t = R.segs[0].t0; applyFrame(R.t); $('#reelTitle').innerHTML = `<small>A FATE / CATALYST PRODUCTION</small>${esc(R.title)}`; $('#reelTitle').style.opacity = 1; $('#reelCap').innerHTML = ''; $('#reel').hidden = false; };
+  const rw = $('#rewatch'); if (rw) rw.onclick = () => { $('#report').hidden = true; phase = 'reel'; R.si = 0; R.mode = 'title'; R.timer = 2.4; R.t = R.segs[0].t0; applyFrame(R.t); $('#reelTitle').innerHTML = `<small>A CATALYST PRODUCTION</small>${esc(R.title)}`; $('#reelTitle').style.opacity = 1; $('#reelCap').innerHTML = ''; $('#reel').hidden = false; };
 }
 function newRound() {
   resetWorld();
@@ -2787,13 +2821,203 @@ window.addEventListener('resize', () => { camera.aspect = innerWidth / innerHeig
 $('#mute').onclick = () => { audioInit(); AU.muted = !AU.muted; if (AU.master) AU.master.gain.value = AU.muted ? 0 : 0.7; $('#mute').textContent = AU.muted ? '🔇' : '🔊'; };
 $('#begin').onclick = () => { audioInit(); $('#intro').hidden = true; phase = 'recon'; refreshUI(); };
 
+/* ================= Blender assets =================
+   Every model can be replaced by a .glb in assets/ (see docs/BLENDER.md). A missing or broken
+   file falls back to the built-in model, so the game always runs. */
+const ASSETS = { cars: {}, props: {}, person: null, gary: null, loaded: [] };
+const MARK = { paint: [1, 0, 1], shirt: [1, 0, 1], pants: [0, 1, 1], skin: [1, 1, 0], hair: [0, 1, 0], shoe: [0, 0, 1] };
+const MARK_HEX = { paint: '#ff00ff', shirt: '#ff00ff', pants: '#00ffff', skin: '#ffff00', hair: '#00ff00', shoe: '#0000ff' };
+const pedMarkers = c => [[MARK.shirt, c.shirt], [MARK.pants, c.pants], [MARK.skin, c.skin], [MARK.hair, c.hair], [MARK.shoe, c.shoe]];
+function recolorGeo(geo, pairs) {
+  const g = geo.clone(), col = g.attributes.color, tgt = pairs.map(([m, hex]) => [m, new THREE.Color(hex)]);
+  for (let i = 0; i < col.count; i++) {
+    const r = col.getX(i), gg = col.getY(i), bb = col.getZ(i);
+    for (const [m, c] of tgt) if (Math.abs(r - m[0]) < 0.03 && Math.abs(gg - m[1]) < 0.03 && Math.abs(bb - m[2]) < 0.03) { col.setXYZ(i, c.r, c.g, c.b); break; }
+  }
+  col.needsUpdate = true;
+  return g;
+}
+const nodeName = o => (o.name || '').replace(/\.\d{3}$/, '');
+function findNode(root, name) { let f = null; root.traverse(o => { if (!f && nodeName(o) === name) f = o; }); return f; }
+function relMatrix(root, node) { return new THREE.Matrix4().copy(root.matrixWorld).invert().multiply(node.matrixWorld); }
+// all meshes under `node` (skipping excluded branches), in `root` space shifted by -offset, as one vertex-colored geometry
+function geoUnder(node, root, exclude, offset = V3()) {
+  const list = [];
+  const visit = o => {
+    if (o !== node && exclude(nodeName(o))) return;
+    if (o.isMesh && o.geometry) {
+      let g = o.geometry.clone().applyMatrix4(relMatrix(root, o));
+      if (g.index) g = g.toNonIndexed();
+      if (!g.attributes.normal) g.computeVertexNormals();
+      const n = g.attributes.position.count, col = new Float32Array(n * 3), src = g.attributes.color;
+      const mc = (Array.isArray(o.material) ? o.material[0] : o.material)?.color || new THREE.Color(1, 1, 1);
+      for (let i = 0; i < n; i++) {
+        if (src) { col[i * 3] = src.getX(i); col[i * 3 + 1] = src.getY(i); col[i * 3 + 2] = src.getZ(i); }
+        else { col[i * 3] = mc.r; col[i * 3 + 1] = mc.g; col[i * 3 + 2] = mc.b; }
+      }
+      const out = new THREE.BufferGeometry();
+      out.setAttribute('position', g.attributes.position); out.setAttribute('normal', g.attributes.normal); out.setAttribute('color', new THREE.BufferAttribute(col, 3));
+      list.push(out);
+    }
+    for (const ch of o.children) visit(ch);
+  };
+  visit(node);
+  if (!list.length) return null;
+  const geo = list.length === 1 ? list[0] : mergeGeometries(list, false);
+  geo.translate(-offset.x, -offset.y, -offset.z);
+  return geo;
+}
+function boxUnder(root, node, offset = V3()) {
+  const box = new THREE.Box3();
+  node.traverse(o => { if (o.isMesh) { o.geometry.computeBoundingBox(); box.union(o.geometry.boundingBox.clone().applyMatrix4(relMatrix(root, o))); } });
+  if (box.isEmpty()) return null;
+  box.translate(V3(-offset.x, -offset.y, -offset.z));
+  return { c: box.getCenter(V3()), h: box.getSize(V3()).multiplyScalar(0.5) };
+}
+const notHitbox = n => n.startsWith('HITBOX');
+const PED_PARTS = ['torso', 'head', 'armL', 'armR', 'legL', 'legR'];
+function ingestAsset(a, scene) {
+  const root = findNode(scene, a.id) || scene;
+  scene.updateMatrixWorld(true);
+  if (a.type === 'car') {
+    const T = CAR_TYPES[a.id], hb = findNode(root, 'HITBOX');
+    if (!T || !hb) throw new Error('car needs a HITBOX');
+    const B0 = boxUnder(root, hb), c = B0.c;
+    const geo = geoUnder(root, root, n => notHitbox(n) || n === 'door' || n === 'straps' || n.startsWith('log_slot'), c);
+    if (!geo) throw new Error('car has no body mesh');
+    Object.assign(T, { hw: B0.h.x, hh: B0.h.y, hl: B0.h.z, cy: c.y });
+    const cab = findNode(root, 'HITBOX_cabin');
+    if (cab) { const B1 = boxUnder(root, cab); CABINS[a.id] = [B1.h.x, B1.h.y, B1.h.z, B1.c.y - c.y, B1.c.z - c.z]; } else delete CABINS[a.id];
+    const A = { geo };
+    const door = findNode(root, 'door');
+    if (door) {
+      const hinge = V3().setFromMatrixPosition(relMatrix(root, door));
+      const dg = geoUnder(door, root, notHitbox, hinge);
+      if (dg) { dg.computeBoundingBox(); const bc = dg.boundingBox.getCenter(V3()), bh = dg.boundingBox.getSize(V3()).multiplyScalar(0.5); dg.translate(-bc.x, -bc.y, -bc.z); A.door = { geo: dg, pivot: hinge.sub(c), center: bc, half: [Math.max(bh.x, 0.04), bh.y, bh.z] }; }
+    }
+    if (a.id === 'logtruck') {
+      const st = findNode(root, 'straps');
+      A.straps = st ? geoUnder(st, root, () => false, c) : null;
+      const slots = []; root.traverse(o => { if (/^log_slot/.test(nodeName(o))) slots.push(o); });
+      A.slots = slots.sort((x, y) => nodeName(x).localeCompare(nodeName(y), undefined, { numeric: true })).map(o => V3().setFromMatrixPosition(relMatrix(root, o)).sub(c).toArray());
+    }
+    ASSETS.cars[a.id] = A;
+  } else if (a.type === 'person') {
+    const parts = {};
+    for (const k of PED_PARTS) {
+      const n = findNode(root, k); if (!n) throw new Error('missing part ' + k);
+      const pivot = V3().setFromMatrixPosition(relMatrix(root, n));
+      const g = geoUnder(n, root, x => notHitbox(x) || PED_PARTS.includes(x), pivot);
+      if (!g) throw new Error('part ' + k + ' has no mesh');
+      parts[k] = { geo: g, pivot };
+      if (a.id === 'person') {
+        PART[k].pivot = pivot.toArray();
+        const hb = findNode(n, 'HITBOX_' + k), HB = hb && boxUnder(root, hb, pivot);
+        if (HB) { PART[k].jfc = [-HB.c.x, -HB.c.y, -HB.c.z]; if (PART[k].sphere) PART[k].sphere = Math.max(HB.h.x, HB.h.y, HB.h.z); else PART[k].half = HB.h.toArray(); }
+      }
+    }
+    ASSETS[a.id] = { parts };
+  } else if (a.type === 'prop') {
+    const hb = findNode(root, 'HITBOX'); if (!hb) throw new Error('prop needs a HITBOX');
+    const B0 = boxUnder(root, hb), geo = geoUnder(root, root, notHitbox, B0.c);
+    if (!geo) throw new Error('prop has no mesh');
+    ASSETS.props[a.id] = { geo, half: B0.h.toArray(), yC: B0.c.y };
+  } else if (a.type === 'item') {
+    const geo = geoUnder(root, root, notHitbox);
+    if (!geo) throw new Error('item has no mesh');
+    const set = {
+      skateboard: g => { SKATE_GEO = g.translate(0, -0.085, 0); }, soccer_ball: g => { BALL_GEO = g; }, golf_ball: g => { GOLF_GEO = g; },
+      plastic_bag: g => { BAG_GEO = g; }, thumbtack: g => { TACK_GEO = g; }, scissors: g => { SCISSOR_GEO = g; }, squirrel: g => { SQ_GEO = g; },
+      bottle: g => { BOTTLE_GEO = g; }, storm_cloud: g => { CLOUD_GEO = g; }, log: g => { LOG_GEO = g.rotateX(-Math.PI / 2); }
+    }[a.id];
+    if (!set) throw new Error('unknown item ' + a.id);
+    set(geo);
+  }
+  ASSETS.loaded.push(a.id);
+}
+async function loadAssets() {
+  let manifest, embedded = window.__FC_ASSETS;
+  try {
+    if (embedded) manifest = embedded.manifest;
+    else if (location.protocol === 'file:') return; // browsers can't load model files from disk; built-in models it is
+    else { const r = await fetch('assets/manifest.json', { cache: 'no-cache' }); if (!r.ok) return; manifest = await r.json(); }
+  } catch (e) { return; }
+  const loader = new GLTFLoader();
+  for (const a of manifest.assets) {
+    try {
+      let gltf;
+      if (embedded) { const bin = Uint8Array.from(atob(embedded.files[a.file]), ch => ch.charCodeAt(0)); gltf = await loader.parseAsync(bin.buffer, ''); }
+      else gltf = await loader.loadAsync(`assets/${a.file}?v=${manifest.version}`);
+      ingestAsset(a, gltf.scene);
+    } catch (e) { console.warn(`Catalyst: couldn't use assets/${a.file} (${e.message}); using the built-in model.`); }
+  }
+  computeLinks();
+  geoCache.clear();
+}
+// Development: writes the built-in models out as .glb files (run with ?noassets so you get the originals).
+async function devExportAssets() {
+  const { GLTFExporter } = await import('three/addons/exporters/GLTFExporter.js');
+  const exporter = new GLTFExporter();
+  const matVC = new THREE.MeshStandardMaterial({ vertexColors: true, name: 'FC_VertexColor', roughness: 0.6 });
+  const matHB = new THREE.MeshBasicMaterial({ color: '#ff3355', name: 'FC_Hitbox', transparent: true, opacity: 0.3 });
+  const M = (geo, name, x = 0, y = 0, z = 0) => { const g = geo.clone(); g.deleteAttribute('uv'); const m = new THREE.Mesh(g, matVC); m.name = name; m.position.set(x, y, z); return m; };
+  const HB = (name, geo, x, y, z) => { const m = new THREE.Mesh(geo, matHB); m.name = name; m.position.set(x, y, z); m.userData.fc_role = 'hitbox'; return m; };
+  const box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+  const socket = (name, x, y, z) => { const o = new THREE.Object3D(); o.name = name; o.position.set(x, y, z); o.userData.fc_role = 'socket'; return o; };
+  const files = {}, list = [];
+  const b64 = buf => { let s = ''; const u = new Uint8Array(buf); for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
+  const NOTES = {
+    car: 'Front of the vehicle faces you in Front view (numpad 1). Magenta = the random paint color. HITBOX = the physics box (edit it freely). HITBOX_cabin = the roof box. door: its origin is the hinge.',
+    person: 'Faces you in Front view. Each part\'s origin is its joint (the game swings limbs around it). Magenta = shirt, cyan = pants, yellow = skin, green = hair, blue = shoes. HITBOX_<part> = ragdoll collision box.',
+    gary: 'Gary uses the same joints as person. Keep part origins where they are; his colors are fixed.',
+    prop: 'Origin on the ground at the center. HITBOX = the physics box.',
+    item: 'Visual only. Keep it about this size; gameplay sizes are fixed in code.'
+  };
+  const add = async (id, type, label, root, notes) => {
+    root.name = id; root.userData = { fc_id: id, fc_type: type, fc_label: label, fc_notes: notes };
+    files[id + '.glb'] = b64(await exporter.parseAsync(root, { binary: true }));
+    list.push({ id, file: id + '.glb', type, label });
+  };
+  for (const type of ['sedan', 'taxi', 'suv', 'van', 'logtruck']) {
+    const T = CAR_TYPES[type], g = new THREE.Group();
+    g.add(M(proceduralCarGeo(type, MARK_HEX.paint).clone().translate(0, T.hh, 0), 'body'));
+    g.add(HB('HITBOX', box(T.hw * 2, T.hh * 2, T.hl * 2), 0, T.hh, 0));
+    const cab = CABINS[type]; if (cab) g.add(HB('HITBOX_cabin', box(cab[0] * 2, cab[1] * 2, cab[2] * 2), 0, T.hh + cab[3], cab[4]));
+    if (['sedan', 'taxi', 'suv'].includes(type)) g.add(M(B(0.08, 0.92, 1.1, MARK_HEX.paint, 0, 0, -0.55), 'door', T.hw + 0.02, 0.85, 0.6));
+    if (type === 'logtruck') {
+      g.add(M(STRAP_GEO.clone().translate(0, T.hh, 0), 'straps'));
+      [[-0.7, 1.53], [0, 1.53], [0.7, 1.53], [-0.35, 2.11], [0.35, 2.11]].forEach(([x, y], i) => g.add(socket('log_slot_' + (i + 1), x, y, -1.0)));
+    }
+    await add(type, 'car', T.label, g, NOTES.car + (type === 'logtruck' ? ' log_slot_1..5 = where the logs sit. straps = what the scissors cut.' : ''));
+  }
+  for (const [id, shirtless, colors] of [['person', false, { shirt: MARK_HEX.shirt, pants: MARK_HEX.pants, skin: MARK_HEX.skin, hair: MARK_HEX.hair, shoe: MARK_HEX.shoe }], ['gary', true, { shirt: '#f0a98a', pants: '#2f6fd6', skin: '#f0a98a', hair: '#4a3728', shoe: '#ff7a00' }]]) {
+    const geos = pedGeos(shirtless, colors), g = new THREE.Group();
+    for (const k of PED_PARTS) {
+      const P = PART[k], m = M(geos[k], k, ...P.pivot);
+      m.add(HB('HITBOX_' + k, P.sphere ? new THREE.IcosahedronGeometry(P.sphere, 1) : box(P.half[0] * 2, P.half[1] * 2, P.half[2] * 2), -P.jfc[0], -P.jfc[1], -P.jfc[2]));
+      g.add(m);
+    }
+    await add(id, 'person', id === 'person' ? 'Pedestrian' : 'Gary', g, id === 'person' ? NOTES.person : NOTES.gary);
+  }
+  for (const kind of ['lamp', 'hydrant', 'trash', 'news', 'cart']) {
+    const d = propDef(kind), g = new THREE.Group();
+    g.add(M(d.geo, 'body')); g.add(HB('HITBOX', box(d.half[0] * 2, d.half[1] * 2, d.half[2] * 2), 0, d.yC, 0));
+    await add(kind, 'prop', d.name, g, NOTES.prop);
+  }
+  const items = [['skateboard', 'Skateboard', SKATE_GEO.clone().translate(0, 0.085, 0)], ['soccer_ball', 'Soccer ball', BALL_GEO], ['golf_ball', 'Golf ball', GOLF_GEO], ['plastic_bag', 'Plastic bag', BAG_GEO],
+    ['thumbtack', 'Thumbtack', TACK_GEO], ['scissors', 'Magic scissors', SCISSOR_GEO], ['squirrel', 'Rabid squirrel', SQ_GEO], ['bottle', "Gary's bottle", BOTTLE_GEO], ['storm_cloud', 'Lightning cloud', CLOUD_GEO], ['log', 'Log', LOG_GEO.clone().rotateX(Math.PI / 2)]];
+  for (const [id, label, geo] of items) { const g = new THREE.Group(); g.add(M(geo, 'body')); await add(id, 'item', label, g, NOTES.item); }
+  return { files, manifest: { version: Date.now(), assets: list } };
+}
+
+if (!/[?&]noassets\b/.test(location.search)) await loadAssets();
 buildBar();
 populate();
 applyConditions();
 paintLights();
 refreshUI();
 phase = 'intro';
-window.__fc = { get phase() { return phase; }, cars: () => cars, peds: () => peds, cats: () => cats, release, placeCatalyst, TOOLS, V3, get total() { return total; }, endRun, ledger, startReel, get runT() { return runT; }, advance(sec) { for (let t = 0; t < sec; t += 1 / 30) frame(1 / 30, false); }, events: () => EVENTS, applyFrame: t => applyFrame(t), ambient: AMBIENT, logs: () => logs, bbs: () => BBS, parcels: () => parcels, falling: () => falling, bottles: () => bottles, get haywire() { return haywire; }, lookAt(x, z, ox = 14, oy = 16, oz = 18, ty = 0) { controls.target.set(x, ty, z); camera.position.set(x + ox, oy, z + oz); controls.update(); }, screen(x, y, z) { _v.set(x, y, z).project(camera); return { x: (_v.x * 0.5 + 0.5) * innerWidth, y: (-_v.y * 0.5 + 0.5) * innerHeight }; } };
+window.__fc = { devExportAssets, assets: ASSETS, get phase() { return phase; }, cars: () => cars, peds: () => peds, cats: () => cats, release, placeCatalyst, TOOLS, V3, get total() { return total; }, endRun, ledger, startReel, get runT() { return runT; }, advance(sec) { for (let t = 0; t < sec; t += 1 / 30) frame(1 / 30, false); }, events: () => EVENTS, applyFrame: t => applyFrame(t), ambient: AMBIENT, logs: () => logs, bbs: () => BBS, parcels: () => parcels, falling: () => falling, bottles: () => bottles, get haywire() { return haywire; }, lookAt(x, z, ox = 14, oy = 16, oz = 18, ty = 0) { controls.target.set(x, ty, z); camera.position.set(x + ox, oy, z + oz); controls.update(); }, screen(x, y, z) { _v.set(x, y, z).project(camera); return { x: (_v.x * 0.5 + 0.5) * innerWidth, y: (-_v.y * 0.5 + 0.5) * innerHeight }; } };
 requestAnimationFrame(tick);
 </script>
 </body>

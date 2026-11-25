@@ -15,7 +15,7 @@ writeFileSync(new URL('./src/game.js', import.meta.url), gameCode);
 
 const out = await build({
   entryPoints: [new URL('./src/game.js', import.meta.url).pathname],
-  bundle: true, format: 'iife', minify: true, write: false, target: 'chrome120',
+  bundle: true, format: 'esm', minify: true, write: false, target: 'chrome120',
   alias: { 'three/addons': 'three/examples/jsm' }
 });
 const bundled = out.outputFiles[0].text.replace(/<\/script/gi, '<\\/script');
@@ -42,7 +42,19 @@ if (fontLink) {
   }
 }
 
-let html = src.slice(0, modOpen) + `<script>\n${bundled}\n</script>` + src.slice(modClose + '</script>'.length);
+// Embed the Blender-editable models so the app needs no file access or network.
+let assetTag = '';
+try {
+  const dir = new URL('../assets/', import.meta.url);
+  const manifest = JSON.parse(readFileSync(new URL('manifest.json', dir), 'utf8'));
+  const files = {};
+  for (const a of manifest.assets) files[a.file] = readFileSync(new URL(a.file, dir)).toString('base64');
+  assetTag = `<script>window.__FC_ASSETS = ${JSON.stringify({ manifest, files })};</script>\n`;
+  console.log(`assets embedded: ${manifest.assets.length}`);
+} catch (e) {
+  console.log('no assets embedded (built-in models will be used):', e.message);
+}
+let html = src.slice(0, modOpen) + assetTag + `<script type="module">\n${bundled}\n</script>` + src.slice(modClose + '</script>'.length);
 html = html.replace(/<script type="importmap">[\s\S]*?<\/script>\s*/, '');
 html = html.replace(/<link rel="preconnect"[^>]*>\s*/, '');
 if (fontLink) html = html.replace(fontLink[0], fontCss ? `<style>\n${fontCss}</style>` : '');
