@@ -11,7 +11,9 @@ Works with Blender 4.2 or newer, including 5.x.
 3. **Point it at the game.** In the add-on's preferences (or in the panel), set **Game folder** to the folder from step 1.
 4. In the 3D viewport, press **N** and open the **Catalyst** tab.
 
-If you just want to look around, open `tools\blender\Catalyst_Assets.blend`. It has one scene per asset, already set up. The add-on finds the game folder automatically when you open that file from inside the game folder.
+**Ready-made files:** `tools\blender\assets\` has one `.blend` per asset (`sedan.blend`, `person.blend`, `logtruck.blend`…), already set up with the helpers. Open one, edit, and press **Export to game**. `tools\blender\Catalyst_Assets.blend` has every asset in one file, one scene each, for browsing. The add-on finds the game folder by itself when these files stay inside the Catalyst folder.
+
+The game reads the `.glb` files in `assets\`, not the `.blend` files, so save your `.blend` as you work and use **Export to game** whenever you want to see the change in the game.
 
 ## Editing an asset
 
