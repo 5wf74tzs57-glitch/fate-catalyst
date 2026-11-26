@@ -64,14 +64,18 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 
 #tray{position:fixed;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;
   padding:0 max(12px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 12px) max(12px,env(safe-area-inset-left,0px))}
-#hint{font-size:13px;line-height:1.4;padding:8px 14px;border-radius:999px;max-width:min(680px,100%);text-align:center}
+#hint{font-size:13px;line-height:1.4;padding:8px 14px;border-radius:999px;max-width:min(680px,100%);text-align:center;transition:opacity .5s,transform .5s}
+#hint.fade{opacity:0;transform:translateY(6px)}
+#hint:empty{display:none}
 #hint b{color:var(--gold)}
 #bar{pointer-events:auto;display:flex;gap:6px;align-items:stretch;padding:8px;overflow-x:auto;max-width:100%;scrollbar-width:thin}
 .tool{flex:0 0 auto;width:72px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px 7px;border-radius:10px;border:1px solid transparent;background:rgba(255,255,255,.05);color:var(--fg);cursor:pointer;font:600 11px/1.15 var(--body);text-align:center}
 .tool:hover{background:rgba(255,255,255,.1)}
 .tool .ic{font-size:24px;line-height:1}
 .tool .cost{font:700 10px var(--mono);color:var(--gold)}
+.tool{position:relative}
 .tool[aria-pressed="true"]{border-color:var(--gold);background:rgba(255,200,61,.16)}
+.tool[aria-pressed="true"]:not(.cond)::after{content:'✕';position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:99px;background:var(--gold);color:#1a1405;font:800 11px/20px var(--body);text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.4)}
 .tool:disabled{opacity:.32;cursor:not-allowed}
 .tool.cond[aria-pressed="true"]{border-color:#8ecae6;background:rgba(142,202,230,.16)}
 .sep{flex:0 0 1px;background:var(--line);margin:4px 2px}
@@ -132,15 +136,47 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .claim .stamp{position:absolute;right:22px;top:24px;transform:rotate(-11deg);border:3px solid #b23a2e;color:#b23a2e;font:400 15px/1.05 var(--display);padding:6px 10px;text-align:center;opacity:.85;border-radius:4px}
 .claim .acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
 .claim .none{font-size:13px;line-height:1.5;margin:16px 0}
-@media (max-width:640px){
+/* phones and small screens: compact HUD, one-line hint, smaller cards */
+@media (max-width:640px), (max-height:500px){
   .brand{font-size:16px}
   #timer,#dmg{font-size:20px}
   #timerLab,#fateLab,#dmgLab{display:none}
   #fateBar{width:80px}
+  #right{gap:5px}
   .chip{margin-top:6px;padding:5px 8px;font-size:10px}
   #feed{display:none}
-  #hint{font-size:12px}
+  #hint{font-size:12px;padding:6px 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  #bar{gap:4px;padding:6px}
+  .tool{width:58px;padding:6px 2px 5px;gap:3px;font-size:10px;border-radius:9px}
+  .tool .ic{font-size:20px}
+  .tool .cost{font-size:9px}
+  .mini{min-width:68px;padding:0 8px;font-size:10px}
+  #release{font-size:15px;min-width:96px;padding:0 12px}
+  .fl{font-size:13px}
+  .fl.big{font-size:16px}
+  .fl.white{font-size:11px}
+  .bub{font-size:11px;padding:4px 8px}
   .claim .stamp{position:static;display:inline-block;margin-bottom:10px}
+}
+/* phones held sideways: the catalysts become a rail down the right edge so the map gets the screen */
+@media (orientation:landscape) and (max-height:500px){
+  #hud{padding-top:calc(env(safe-area-inset-top,0px) + 6px);right:112px}
+  .brand{font-size:13px}
+  .chip{margin-top:4px;padding:4px 7px;font-size:9px}
+  #timer,#dmg{font-size:17px}
+  #tray{left:auto;top:0;bottom:0;width:auto;flex-direction:row;align-items:stretch;gap:6px;
+    padding:calc(env(safe-area-inset-top,0px) + 6px) max(6px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 6px) 0}
+  #hint{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 8px);max-width:min(460px,calc(100vw - 130px))}
+  #bar{flex-direction:column;overflow-x:hidden;overflow-y:auto;max-height:100%;width:100px;padding:5px;align-items:center}
+  .tool{width:88px;display:grid;grid-template-columns:22px 1fr;grid-template-rows:auto auto;column-gap:5px;row-gap:1px;align-items:center;padding:5px 5px;text-align:left}
+  .tool .ic{grid-row:1 / span 2;font-size:18px;text-align:center}
+  .tool span:nth-child(2){font-size:10px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .tool .cost{font-size:8px;line-height:1}
+  .sep{flex:0 0 1px;width:76px;height:1px;margin:2px 0}
+  .side{flex-direction:row;width:88px}
+  .mini{min-width:0;flex:1;padding:6px 2px;font-size:9px}
+  #release{min-width:0;width:88px;padding:10px 0;font-size:13px}
+  #mute{right:auto;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 46px);width:32px;height:32px;font-size:13px}
 }
 @media (prefers-reduced-motion:reduce){.fe{animation:none}#flash{transition:none}}
 </style>
@@ -184,7 +220,7 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
     <h1>CATALYST</h1>
     <p class="lede">You don't cause disasters. You start them. One busy intersection, one afternoon, and a pocket full of small, terrible ideas.</p>
     <ol>
-      <li><span>1</span><div><b>Recon.</b> Watch the traffic lights. Hover people to read their day. Two of them are at their breaking point, and anything that happens to them doubles the damage they cause.</div></li>
+      <li><span>1</span><div><b>Recon.</b> Watch the traffic lights. Tap or hover people to read their day. Two of them are at their breaking point, and anything that happens to them doubles the damage they cause.</div></li>
       <li><span>2</span><div><b>Plant catalysts.</b> You have 100 Fate. A thumbtack costs 5, lightning costs 50. Cheap causes with long chain reactions score best.</div></li>
       <li><span>3</span><div><b>Release.</b> You get 45 seconds of consequences, then the replay and an itemized insurance claim.</div></li>
     </ol>
@@ -700,6 +736,10 @@ const SFX = {
 const LBL = [];
 function floatText(pos, text, cls = '', life = 1.6, follow = null, bubble = false) {
   if (phase === 'reel') return;
+  // cap how many are on screen at once (phones get fewer); the oldest one goes first
+  const cap = bubble ? (SMALL() ? 3 : 6) : (SMALL() ? 5 : 12);
+  const same = LBL.filter(l => l.bubble === bubble);
+  if (same.length >= cap) { const old = same[0]; old.el.remove(); LBL.splice(LBL.indexOf(old), 1); }
   const el = document.createElement('div');
   el.className = bubble ? 'bub ' + cls : 'fl ' + cls; el.textContent = text;
   $('#labels').appendChild(el);
@@ -708,16 +748,28 @@ function floatText(pos, text, cls = '', life = 1.6, follow = null, bubble = fals
 function say(ped, text, angry = false) {
   floatText(ped.pos, text, angry ? 'angry' : '', 2.4, () => { ped.parts.head.obj.getWorldPosition(_v2); _v2.y += 0.6; return _v2; }, true);
 }
+let hudBottom = 0, trayRect = null, labelFrame = 0;
 function updateLabels(dt) {
   const w = innerWidth, h = innerHeight;
+  if (LBL.length && (labelFrame++ % 20 === 0)) {
+    const hr = $('#hud').getBoundingClientRect(), r = $('#right').getBoundingClientRect();
+    hudBottom = Math.max(r.bottom, hr.top + 40) + 8;
+    trayRect = $('#tray').getBoundingClientRect();
+  }
   for (let i = LBL.length - 1; i >= 0; i--) {
     const L = LBL[i]; L.t += dt;
     if (L.t > L.life) { L.el.remove(); LBL.splice(i, 1); continue; }
     const p = L.follow ? L.follow() : L.pos;
     _v.copy(p).project(camera);
     if (_v.z > 1) { L.el.style.opacity = 0; continue; }
-    const x = (_v.x * 0.5 + 0.5) * w, y = (-_v.y * 0.5 + 0.5) * h - (L.bubble ? 0 : L.t * 34);
-    L.el.style.transform = `translate(${(x + L.jx).toFixed(1)}px,${(y + L.jy).toFixed(1)}px) translate(-50%,-100%)`;
+    let x = (_v.x * 0.5 + 0.5) * w + L.jx, y = (-_v.y * 0.5 + 0.5) * h - (L.bubble ? 0 : L.t * 34) + L.jy;
+    // keep labels on screen, below the score, and off the catalyst tray
+    const ew = L.ew || (L.ew = L.el.offsetWidth), eh = L.eh || (L.eh = L.el.offsetHeight);
+    const rail = trayRect && trayRect.width < w * 0.5;
+    const right = rail ? trayRect.left - 6 : w - 6, bottom = trayRect && !rail ? trayRect.top - 4 : h - 6;
+    x = clamp(x, ew / 2 + 6, Math.max(ew / 2 + 6, right - ew / 2));
+    y = clamp(y, hudBottom + eh, Math.max(hudBottom + eh, bottom));
+    L.el.style.transform = `translate(${x.toFixed(1)}px,${y.toFixed(1)}px) translate(-50%,-100%)`;
     L.el.style.opacity = L.bubble ? (L.t > L.life - 0.3 ? (L.life - L.t) / 0.3 : 1) : 1 - Math.pow(L.t / L.life, 3);
   }
 }
@@ -2508,7 +2560,9 @@ function placeCard() {
   const cw = el.offsetWidth, ch = el.offsetHeight, gap = 26;
   let left = x + gap; if (left + cw > innerWidth - 12) left = x - gap - cw;
   left = clamp(left, 12, innerWidth - cw - 12);
-  const trayTop = $('#tray').getBoundingClientRect().top;
+  const tr = $('#tray').getBoundingClientRect(), sideRail = tr.width < innerWidth * 0.5;
+  if (sideRail) left = clamp(left, 12, Math.max(12, tr.left - cw - 10));
+  const trayTop = sideRail ? innerHeight : tr.top;
   const top = clamp(y - ch * 0.35, 70, Math.max(70, trayTop - ch - 10));
   el.style.transform = `translate(${left.toFixed(0)}px,${top.toFixed(0)}px)`;
 }
@@ -2552,15 +2606,29 @@ function selectTool(t) {
   controls.enabled = !(t && t.kind === 'aim');
   setHint();
 }
-let hintOverride = 0;
-function flashHint(text, t = 2.2) { $('#hint').innerHTML = esc(text); hintOverride = t; }
+let hintOverride = 0, hintTimer = 0, lastHint = '';
+const TOUCH = window.matchMedia('(hover: none)').matches || navigator.maxTouchPoints > 0;
+const SMALL = () => window.innerWidth <= 640 || window.innerHeight <= 500;
+// shows a hint, then fades it after a few seconds so it isn't covering the game
+function showHint(html, hold) {
+  const h = $('#hint');
+  if (html === lastHint && !h.classList.contains('fade')) return;
+  lastHint = html; h.innerHTML = html; h.classList.remove('fade');
+  clearTimeout(hintTimer);
+  if (html) hintTimer = setTimeout(() => h.classList.add('fade'), hold);
+}
+function flashHint(text, t = 2.2) { showHint(esc(text), Math.max(t * 1000, 1500)); hintOverride = t; }
 function setHint() {
   if (hintOverride > 0) return;
-  const h = $('#hint');
-  if (selTool) h.innerHTML = `<b>${selTool.emoji} ${selTool.name}.</b> ${esc(selTool.desc)} <span style="color:var(--dim)">Esc to cancel.</span>`;
-  else if (phase === 'recon') h.innerHTML = cats.length ? `${cats.length} catalyst${cats.length > 1 ? 's' : ''} armed. ${reconPaused ? 'Time starts the moment you hit' : 'Watch the lights, then hit'} <b>RELEASE</b>.` : `Time is ${reconPaused ? 'frozen' : 'running'}. Two people here are one bad day from snapping. <b>Hover the crowd</b> to find them.`;
-  else if (phase === 'run') h.innerHTML = fate >= 5 ? `Consequences in progress. You still have <b>${fate} Fate</b> to spend.` : 'Consequences in progress.';
-  else h.innerHTML = '';
+  const small = SMALL(), cancel = TOUCH ? 'Tap ✕ to cancel.' : 'Esc to cancel.';
+  let html = '', hold = 4500;
+  if (selTool) { html = `<b>${selTool.emoji} ${selTool.name}.</b> ${esc(selTool.desc)} <span style="color:var(--dim)">${cancel}</span>`; if (small) html = `<b>${selTool.emoji} ${selTool.name}</b> · ${esc(selTool.desc.split('. ')[0].replace(/\.$/, ''))}.`; hold = 5000; }
+  else if (phase === 'recon') html = cats.length
+    ? `${cats.length} armed. ${reconPaused ? 'Time starts when you hit' : 'Watch the lights, then hit'} <b>RELEASE</b>.`
+    : small ? `Two people here are about to snap. <b>${TOUCH ? 'Tap' : 'Hover'} the crowd</b> to find them.`
+      : `Time is ${reconPaused ? 'frozen' : 'running'}. Two people here are one bad day from snapping. <b>${TOUCH ? 'Tap' : 'Hover'} the crowd</b> to find them.`;
+  else if (phase === 'run') html = '';   // the run is for watching
+  showHint(html, hold);
 }
 function refreshUI() {
   $('#fateFill').style.width = (fate / FATE_MAX * 100) + '%';
@@ -2817,7 +2885,7 @@ function frame(dt, draw) {
   if (draw) renderer.render(scene, camera);
 }
 
-window.addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; fitFov(); renderer.setSize(innerWidth, innerHeight); });
+window.addEventListener('resize', () => { lastHint = ''; setHint(); camera.aspect = innerWidth / innerHeight; fitFov(); renderer.setSize(innerWidth, innerHeight); });
 $('#mute').onclick = () => { audioInit(); AU.muted = !AU.muted; if (AU.master) AU.master.gain.value = AU.muted ? 0 : 0.7; $('#mute').textContent = AU.muted ? '🔇' : '🔊'; };
 $('#begin').onclick = () => { audioInit(); $('#intro').hidden = true; phase = 'recon'; refreshUI(); };
 
